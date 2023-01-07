@@ -16,7 +16,6 @@ using namespace std;
 #define _USE_MATH_DEFINES
 
 // includes
-#include <objloader.hpp>
 #include <stb_image.h>
 #include <shader_m.h>
 #include <camera.h>
@@ -42,7 +41,7 @@ float lastFrame = 0.0f;
 
 // variaveis planetas
 glm::vec3 posicao_centro = glm::vec3(0.0f, 0.0f, 0.0f);
-float plan_velocidade = 0.1f;
+float plan_velocidade = 0.5f;
 float planet_raio = 10.0f;
 int planeta = 0;
 
@@ -288,8 +287,9 @@ int main()
     // Base de todas as esferas menos da saturno
     GLuint vao = SolidSphere(planet_raio, 32, 32);
 
+
     // Modelo de saturno
-    Model ourModel("C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Saturno.obj");
+    Model ourModel("C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Saturno/teste.obj");
 
 	// guardar a posição dos planetas
 	glm::vec3 posicaoPlanetas[8];
@@ -412,10 +412,10 @@ int main()
         double zz = cos(glfwGetTime() * plan_velocidade * 0.75f) * planet_raio * 3.0f * 2.0f;
         posicaoPlanetas[2] = glm::vec3(xx, 0, zz);
 
-        model = glm::rotate(model, (float)glfwGetTime() / 3.5f, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        model = glm::translate(model, glm::vec3(xx, 0.0f, zz));
         moon = model;
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+        model = glm::scale(model, glm::vec3(0.4, 0.4, 0.4));
         sphereShader.setMat4("model", model);
 
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
@@ -430,11 +430,11 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade * 0.55f) * planet_raio * 0.5f * 2.0f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.55f) * planet_raio * 0.5f * 2.0f;
-        model = glm::rotate(moon, (float)glfwGetTime(), glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+		xx = sin(glfwGetTime() * plan_velocidade * 10.5f) * planet_raio * 0.5f * 2.0f;
+		zz = cos(glfwGetTime() * plan_velocidade * 10.5f) * planet_raio * 0.5f * 2.0f;
+        model = glm::translate(moon, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
+        model = glm::scale(model, glm::vec3(0.1, 0.1, 0.1));
         sphereShader.setMat4("model", model);
 
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
@@ -454,7 +454,7 @@ int main()
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, posicao_centro);
-        model = glm::rotate(model, (float)glfwGetTime() / 15, glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
         lightsphereShader.setMat4("model", model);
 
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
@@ -474,9 +474,9 @@ int main()
 		xx = sin(glfwGetTime() * plan_velocidade) * planet_raio * 1.f * 2.f;
 		zz = cos(glfwGetTime() * plan_velocidade) * planet_raio * 1.f * 2.f;
 		posicaoPlanetas[0] = glm::vec3(xx, 0, zz);
-        model = glm::rotate(model, (float)glfwGetTime() / 3.0f, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        model = glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+        model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
         sphereShader.setMat4("model", model);
 
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
@@ -496,9 +496,9 @@ int main()
 		xx = sin(glfwGetTime() * plan_velocidade * 0.8f) * planet_raio * 2.f * 2.f;
 		zz = cos(glfwGetTime() * plan_velocidade * 0.8f) * planet_raio * 2.f * 2.f;
 		posicaoPlanetas[1] = glm::vec3(xx, 0, zz);
-        model = glm::rotate(model, (float)glfwGetTime() / 3.25f, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        model = glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+        model = glm::scale(model, glm::vec3(0.35, 0.35, 0.35));
         sphereShader.setMat4("model", model);
 
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
@@ -518,9 +518,9 @@ int main()
 		zz = cos(glfwGetTime() * plan_velocidade * 0.6f) * planet_raio * 4.f * 2.f;
 		posicaoPlanetas[3] = glm::vec3(xx, 0, zz);
 
-        model = glm::rotate(model, (float)glfwGetTime() / 4, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        model = glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+        model = glm::scale(model, glm::vec3(0.3, 0.3, 0.3));
         sphereShader.setMat4("model", model);
 
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
@@ -539,9 +539,9 @@ int main()
 		xx = sin(glfwGetTime() * plan_velocidade * 0.5f) * planet_raio * 5.f * 2.5f;
 		zz = cos(glfwGetTime() * plan_velocidade * 0.5f) * planet_raio * 5.f * 2.5f;
 		posicaoPlanetas[4] = glm::vec3(xx, 0, zz);
-        model = glm::rotate(model, (float)glfwGetTime() / 5, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        model = glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
+        model = glm::scale(model, glm::vec3(0.6, 0.6, 0.6));
         sphereShader.setMat4("model", model);
 
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
@@ -556,22 +556,19 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade * 0.48f) * planet_raio * 6.f * 2.5f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.48f) * planet_raio * 6.f * 2.5f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 6.f * 2.5f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 6.f * 2.5f;
 		posicaoPlanetas[5] = glm::vec3(xx, 0, zz);
-
-        model = glm::rotate(model, (float)glfwGetTime() / 6, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx,0.0f, zz));
+		
+		model = glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        //
+        model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
         sphereShader.setMat4("model", model);
-        ourModel.Draw(sphereShader);
+        ourModel.Draw(sphereShader);	
 
-        //glDrawElements( GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0) );
-
-
-
-        //###################################### URANOs ######################################
+        //###################################### URANO ######################################
         glBindVertexArray(vao);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, urano_tex);
@@ -581,11 +578,11 @@ int main()
         // world transformation
         model = glm::mat4(1.0f);
 		// posição do planeta
-		xx = sin(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 7.f * 2.5f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 7.f * 2.5f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.42f) * planet_raio * 7.f * 2.5f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.42f) * planet_raio * 7.f * 2.5f;
 		posicaoPlanetas[6] = glm::vec3(xx, 0, zz);
 
-        model = glm::rotate(model, (float)glfwGetTime() / 7, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, -1.0f, zz));
+        model =  glm::translate(model, glm::vec3(xx, -1.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
         sphereShader.setMat4("model", model);
@@ -604,11 +601,11 @@ int main()
         // world transformation
         model = glm::mat4(1.0f);
 		// posição do planeta
-		xx = sin(glfwGetTime() * plan_velocidade * 0.44f) * planet_raio * 8.f * 2.5f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.44f) * planet_raio * 8.f * 2.5f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.38f) * planet_raio * 8.f * 2.5f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.38f) * planet_raio * 8.f * 2.5f;
 		posicaoPlanetas[7] = glm::vec3(xx, 0, zz);
 
-        model = glm::rotate(model, (float)glfwGetTime() / 8, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        model =  glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
         sphereShader.setMat4("model", model);
@@ -623,7 +620,7 @@ int main()
 
 
 
-        for (float i = 1; i < 9; i++)
+        for (int i = 1; i < 9; i++)
         {
             modelorb = glm::mat4(1);
 			// iniciar no meio para fazer o circulo conforme o meio
@@ -641,7 +638,7 @@ int main()
 
         modelorb = glm::mat4(1.0f);
         modelorb = glm::translate(modelorb, posicaoPlanetas[2]);
-        modelorb = glm::scale(modelorb, glm::vec3(0.5f * 2.f, 0.5f * 2.f, 0.5f * 2.f));
+        modelorb = glm::scale(modelorb, glm::vec3(0.5f * 2.f, 0, 0.5f * 2.f));
         sphereShader.setMat4("model", modelorb);
         glDrawArrays(GL_LINE_LOOP, 0, (GLsizei)orbVert.size() / 3);
 
@@ -671,6 +668,7 @@ int main()
 			pos_aux = posicaoPlanetas[0];
             pos_aux.y = 40.0f;
 			camera.Position = pos_aux;
+
             mostrarInfo(TextShader);
 			break;
 		case 2: // Venus
@@ -725,7 +723,6 @@ int main()
             if (planeta == 0) {
                 renderText(TextShader, "Sistema Solar ", 25.0f, SCR_HEIGHT - 30.0f, 0.50f, glm::vec3(0.145f, 0.705f, 0.745f));
             }
-              
             break;
         }
 		

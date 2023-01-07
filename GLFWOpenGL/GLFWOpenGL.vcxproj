@@ -137,7 +137,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\SolarSystem4\SolarSystem4\SolarSystem4\objloader.cpp" />
     <ClCompile Include="include\glad\src\glad.c" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SolarSystem4\SolarSystem4\SolarSystem4\objloader.cpp">
-      <Filter>Arquivos de Origem</Filter>
-    </ClCompile>
     <ClCompile Include="include\glad\src\glad.c">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
