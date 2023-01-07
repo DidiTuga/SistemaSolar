@@ -668,14 +668,18 @@ int main()
 			pos_aux = posicaoPlanetas[0];
             pos_aux.y = 40.0f;
 			camera.Position = pos_aux;
-
+            // camera olhar para baixo 
+            camera.Pitch = -90.0f;
+            camera.Yaw = 0.0f;
             mostrarInfo(TextShader);
 			break;
 		case 2: // Venus
             pos_aux = posicaoPlanetas[1];
             pos_aux.y = 40.0f;
             camera.Position = pos_aux;
-
+            // camera olhar para baixo 
+            camera.Pitch = -90.0f;
+            camera.Yaw = 0.0f;
             mostrarInfo(TextShader);
 			
 			break;
@@ -683,40 +687,54 @@ int main()
             pos_aux = posicaoPlanetas[2];
             pos_aux.y = 40.0f;
             camera.Position = pos_aux;
-
+            // camera olhar para baixo 
+            camera.Pitch = -90.0f;
+            camera.Yaw = 0.0f;
             mostrarInfo(TextShader);
 			break;
 		case 4: // marte
             pos_aux = posicaoPlanetas[3];
             pos_aux.y = 40.0f;
             camera.Position = pos_aux;
+            // camera olhar para baixo 
+            camera.Pitch = -90.0f;
+            camera.Yaw = 0.0f;
             mostrarInfo(TextShader);
 			break;
 		case 5: // jupiter
             pos_aux = posicaoPlanetas[4];
             pos_aux.y = 40.0f;
             camera.Position = pos_aux;
-
+            // camera olhar para baixo 
+            camera.Pitch = -90.0f;
+            camera.Yaw = 0.0f;
             mostrarInfo(TextShader);
 			break;
 		case 6: // saturno
             pos_aux = posicaoPlanetas[5];
             pos_aux.y = 40.0f;
             camera.Position = pos_aux;
-
+            // camera olhar para baixo 
+            camera.Pitch = -90.0f;
+            camera.Yaw = 0.0f;
 			mostrarInfo(TextShader);
 			break;
 		case 7: // urano
             pos_aux = posicaoPlanetas[6];
             pos_aux.y = 40.0f;
             camera.Position = pos_aux;
-
+			// camera olhar para baixo 
+			camera.Pitch = -90.0f;
+			camera.Yaw = 0.0f;
             mostrarInfo(TextShader);
 			break;
 		case 8: // netuno
             pos_aux = posicaoPlanetas[7];
             pos_aux.y = 40.0f;
             camera.Position = pos_aux;
+            // camera olhar para baixo 
+            camera.Pitch = -90.0f;
+            camera.Yaw = 0.0f;
             mostrarInfo(TextShader);
 			
         default:
@@ -758,7 +776,7 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
     {
 		planeta = 0;
-        camera.Position = glm::vec3(0.0f, 100.0f, -150.0f);
+        camera.Position = glm::vec3(0.0f, 150.0f, -250.0f);
         camera.Yaw = 90.0f;
         camera.Pitch = -40.0f;
     }
