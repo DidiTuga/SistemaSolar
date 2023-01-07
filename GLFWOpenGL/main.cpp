@@ -7,7 +7,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stdlib.h>
 #include <iostream> 
-#include <vector> 
+#include <vector>
+#include <ft2build.h>
+#include FT_FREETYPE_H  
 using namespace std;
 
 #include <math.h>
@@ -41,6 +43,8 @@ float lastFrame = 0.0f;
 // variaveis planetas
 glm::vec3 posicao_centro = glm::vec3(0.0f, 0.0f, 0.0f);
 float plan_velocidade = 0.1f;
+float planet_raio = 10.0f;
+int planeta = 0;
 
 // lighting
 glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
@@ -65,19 +69,35 @@ float acc3 = 1.0f;
 unsigned int loadTexture(const char* path);
 unsigned int loadCubemap(vector<string> faces);
 GLuint SolidSphere(float radius, int slices, int stacks);
+void processInput(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
+void renderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
+void mostrarInfo(Shader& shader);
 
+struct Character {
+	GLuint TextureID;   // ID handle of the glyph texture
+	glm::ivec2 Size;    // Size of glyph
+	glm::ivec2 Bearing;  // Offset from baseline to left/top of glyph
+	GLuint Advance;    // Offset to advance to next glyph
+};
+map<GLchar, Character> Characters;
+unsigned int VAO, VBO;
+
+struct PlanetInfo {
+    string Nome;
+	string Velocidade;
+    string Massa;
+	string Diametro;
+};
+PlanetInfo Info;
 
 int main()
 {
     //Propriedades da esfera, camadas longitudinais e transversais
     int slices = 32;
     int stacks = 32;
-    
-    //numero de pontos
     int numIndicies = (slices * stacks + slices) * 6;
 	
 	//inicializar camera
@@ -89,13 +109,13 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Sistema Solar", NULL, NULL);
     if (window == NULL)
     {
         cout << "Failed to create GLFW window" << endl;
@@ -122,16 +142,93 @@ int main()
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // build and compile our shader zprogram
-    // ------------------------------------
+	// ################################## Ir buscar os shaders ##################################
 	Shader sphereShader("shaders/lighting_maps.glsl", "shaders/lighting_maps.frag");
     Shader lightsphereShader("shaders/light_cube.glsl", "shaders/light_cube.frag");
     Shader skyboxShader("shaders/skybox.glsl", "shaders/skybox.frag");
+	// Texturas para as letras
+	Shader TextShader("shaders/textshader.vs", "shaders/textshader.fs");
 
-    /*---------------Inicializacao da construcao de um objecto do tipo esfera para os planetas------------------*/
-    /*---------------Carregamos aqui o VAO do tipo esfera  -----------*/
+    // --------------- projeção das letras
+    glm::mat4 text_projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
+    TextShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(TextShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(text_projection));
+
+
+    // ################################## FreeType ##################################
+    // Configuração para renderizar texto
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft))
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+    FT_Face face;
+    if (FT_New_Face(ft, "Textures/FiraCode-Regular.ttf", 0, &face))
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+    //colocar tamanho para carregar a letra
+    FT_Set_Pixel_Sizes(face, 0, 48);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // disable byte-alignment restriction
+
+    for (unsigned char c = 0; c < 128; c++)
+    {
+        // load character glyph 
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        {
+            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            continue;
+        }
+        // generate texture
+        unsigned int texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
+        );
+        // set texture options
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // now store character for later use
+        Character character = {
+            texture,
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            face->glyph->advance.x
+        };
+        Characters.insert(std::pair<char, Character>(c, character));
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // Destroy FreeType once we're finished
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
+
+    // Parte da configuração
+      // configure VAO/VBO for texture quads
+    // -----------------------------------
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
 	
+	// ########################## Inicializar SKYBOX ##########################
     float skyboxVertices[] = {
         // positions
         -1.0f,  1.0f, -1.0f,
@@ -176,7 +273,7 @@ int main()
         -1.0f, -1.0f,  1.0f,
          1.0f, -1.0f,  1.0f
     };
-    
+	// skybox buffers
     unsigned int skyboxVAO, skyboxVBO;
     glGenVertexArrays(1, &skyboxVAO);
     glGenBuffers(1, &skyboxVBO);
@@ -186,8 +283,10 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     
-    // sphere base
-    GLuint vao = SolidSphere(10, 32, 32);
+
+    //---------------Carregamos aqui o VAO do tipo esfera  -----------
+    // Base de todas as esferas menos da saturno
+    GLuint vao = SolidSphere(planet_raio, 32, 32);
 
     // Modelo de saturno
     Model ourModel("C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Saturno.obj");
@@ -195,7 +294,7 @@ int main()
 	// guardar a posição dos planetas
 	glm::vec3 posicaoPlanetas[8];
 
-	// LOAD TEXTURES
+	// ############################### Carregar Texturar ###############################
 	unsigned int sol_tex = loadTexture(sol_path);
 	unsigned int mercurio_tex = loadTexture(mercurio_path);
 	unsigned int venus_tex = loadTexture(venus_path);
@@ -208,7 +307,6 @@ int main()
 	unsigned int neptuno_tex = loadTexture(neptuno_path);
 	
     vector <string> faces{
-	
         "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/right.jpg",
         "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/left.jpg",
         "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/top.jpg",
@@ -222,23 +320,23 @@ int main()
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 	
-	// GERAR VETORES COM POSIÇÂO DE CADA ORBITA
+	// ############################### GERAR VETORES COM POSIÇÂO DE CADA ORBITA ###############################
     std::vector<float> orbVert;
     GLfloat xx;
     GLfloat zz;
     float angl;
-    for (int i = 0; i < 200; i++)
+    for (int i = 0; i < (planet_raio*2*10); i++)
     {
-        angl = (float)(M_PI / 2 - i * (M_PI / 100));
-        xx = sin(angl) * 10.0f;
-        zz = cos(angl) * 10.0f;
+        angl = (float)(M_PI / 2 - i * (M_PI / (planet_raio*10)));
+        xx = sin(angl) * planet_raio;
+        zz = cos(angl) * planet_raio;
         orbVert.push_back(xx);
         orbVert.push_back(0.0f);
         orbVert.push_back(zz);
 
     }
 
-    /* VAO-VBO para as ORBITAS*/
+    // ############################### VAO-VBO para as ORBITAS ###############################
     GLuint VBO_t, VAO_t;
     glGenVertexArrays(1, &VAO_t);
     glGenBuffers(1, &VBO_t);
@@ -310,8 +408,8 @@ int main()
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 moon;
         // posição da terra
-        double xx = sin(glfwGetTime() * plan_velocidade * 0.75f) * 10.0f * 3.0f * 2.0f;
-        double zz = cos(glfwGetTime() * plan_velocidade * 0.75f) * 10.0f * 3.0f * 2.0f;
+        double xx = sin(glfwGetTime() * plan_velocidade * 0.75f) * planet_raio * 3.0f * 2.0f;
+        double zz = cos(glfwGetTime() * plan_velocidade * 0.75f) * planet_raio * 3.0f * 2.0f;
         posicaoPlanetas[2] = glm::vec3(xx, 0, zz);
 
         model = glm::rotate(model, (float)glfwGetTime() / 3.5f, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
@@ -332,8 +430,8 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade * 0.55f) * 10.0f * 0.5f * 2.0f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.55f) * 10.0f * 0.5f * 2.0f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.55f) * planet_raio * 0.5f * 2.0f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.55f) * planet_raio * 0.5f * 2.0f;
         model = glm::rotate(moon, (float)glfwGetTime(), glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.2, 0.2, 0.2));
@@ -362,7 +460,6 @@ int main()
         glDrawElements(GL_TRIANGLES, numIndicies, GL_UNSIGNED_INT, BUFFER_OFFSET(0));
 		
 
-
         //###################################### MERCURIO ######################################
 
         glBindVertexArray(vao);
@@ -374,8 +471,8 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade) * 10.0f * 1.f * 2.f;
-		zz = cos(glfwGetTime() * plan_velocidade) * 10.0f * 1.f * 2.f;
+		xx = sin(glfwGetTime() * plan_velocidade) * planet_raio * 1.f * 2.f;
+		zz = cos(glfwGetTime() * plan_velocidade) * planet_raio * 1.f * 2.f;
 		posicaoPlanetas[0] = glm::vec3(xx, 0, zz);
         model = glm::rotate(model, (float)glfwGetTime() / 3.0f, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
@@ -396,8 +493,8 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade * 0.8f) * 10.0f * 2.f * 2.f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.8f) * 10.0f * 2.f * 2.f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.8f) * planet_raio * 2.f * 2.f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.8f) * planet_raio * 2.f * 2.f;
 		posicaoPlanetas[1] = glm::vec3(xx, 0, zz);
         model = glm::rotate(model, (float)glfwGetTime() / 3.25f, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
@@ -417,8 +514,8 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade * 0.6f) * 10.0f * 4.f * 2.f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.6f) * 10.0f * 4.f * 2.f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.6f) * planet_raio * 4.f * 2.f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.6f) * planet_raio * 4.f * 2.f;
 		posicaoPlanetas[3] = glm::vec3(xx, 0, zz);
 
         model = glm::rotate(model, (float)glfwGetTime() / 4, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
@@ -431,7 +528,7 @@ int main()
 
         //###################################### JUPITER ######################################
        
-
+        glBindVertexArray(vao);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, jupiter_tex);
 
@@ -439,8 +536,8 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade * 0.5f) * 10.0f * 5.f * 2.5f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.5f) * 10.0f * 5.f * 2.5f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.5f) * planet_raio * 5.f * 2.5f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.5f) * planet_raio * 5.f * 2.5f;
 		posicaoPlanetas[4] = glm::vec3(xx, 0, zz);
         model = glm::rotate(model, (float)glfwGetTime() / 5, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
@@ -451,7 +548,7 @@ int main()
 
 
         //###################################### SATURNO ######################################
-
+        //glBindVertexArray(vao);
         glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, saturno_tex);
 
@@ -459,11 +556,11 @@ int main()
 
         // world transformation
         model = glm::mat4(1.0f);
-		xx = sin(glfwGetTime() * plan_velocidade * 0.48f) * 10.0f * 6.f * 2.5f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.48f) * 10.0f * 6.f * 2.5f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.48f) * planet_raio * 6.f * 2.5f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.48f) * planet_raio * 6.f * 2.5f;
 		posicaoPlanetas[5] = glm::vec3(xx, 0, zz);
 
-        model = glm::rotate(model, (float)glfwGetTime() / 6, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, .0f, zz));
+        model = glm::rotate(model, (float)glfwGetTime() / 6, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx,0.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
@@ -484,11 +581,11 @@ int main()
         // world transformation
         model = glm::mat4(1.0f);
 		// posição do planeta
-		xx = sin(glfwGetTime() * plan_velocidade * 0.46f) * 10.0f * 7.f * 2.5f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.46f) * 10.0f * 7.f * 2.5f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 7.f * 2.5f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 7.f * 2.5f;
 		posicaoPlanetas[6] = glm::vec3(xx, 0, zz);
 
-        model = glm::rotate(model, (float)glfwGetTime() / 7, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
+        model = glm::rotate(model, (float)glfwGetTime() / 7, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, -1.0f, zz));
         model = glm::rotate(model, (float)glfwGetTime() + 2, glm::vec3(0.0f, 3.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
         sphereShader.setMat4("model", model);
@@ -507,8 +604,8 @@ int main()
         // world transformation
         model = glm::mat4(1.0f);
 		// posição do planeta
-		xx = sin(glfwGetTime() * plan_velocidade * 0.44f) * 10.0f * 8.f * 2.5f;
-		zz = cos(glfwGetTime() * plan_velocidade * 0.44f) * 10.0f * 8.f * 2.5f;
+		xx = sin(glfwGetTime() * plan_velocidade * 0.44f) * planet_raio * 8.f * 2.5f;
+		zz = cos(glfwGetTime() * plan_velocidade * 0.44f) * planet_raio * 8.f * 2.5f;
 		posicaoPlanetas[7] = glm::vec3(xx, 0, zz);
 
         model = glm::rotate(model, (float)glfwGetTime() / 8, glm::vec3(0.0f, 3.0f, 0.0f)) * glm::translate(model, glm::vec3(xx, 0.0f, zz));
@@ -566,13 +663,82 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
+		// ###################################### Info dos Planetas ######################################
+        glm::vec3 pos_aux;
+        switch (planeta)
+        {
+        case 1: // Mercurio
+			pos_aux = posicaoPlanetas[0];
+            pos_aux.y = 40.0f;
+			camera.Position = pos_aux;
+            mostrarInfo(TextShader);
+			break;
+		case 2: // Venus
+            pos_aux = posicaoPlanetas[1];
+            pos_aux.y = 40.0f;
+            camera.Position = pos_aux;
+
+            mostrarInfo(TextShader);
+			
+			break;
+		case 3:
+            pos_aux = posicaoPlanetas[2];
+            pos_aux.y = 40.0f;
+            camera.Position = pos_aux;
+
+            mostrarInfo(TextShader);
+			break;
+		case 4: // marte
+            pos_aux = posicaoPlanetas[3];
+            pos_aux.y = 40.0f;
+            camera.Position = pos_aux;
+            mostrarInfo(TextShader);
+			break;
+		case 5: // jupiter
+            pos_aux = posicaoPlanetas[4];
+            pos_aux.y = 40.0f;
+            camera.Position = pos_aux;
+
+            mostrarInfo(TextShader);
+			break;
+		case 6: // saturno
+            pos_aux = posicaoPlanetas[5];
+            pos_aux.y = 40.0f;
+            camera.Position = pos_aux;
+
+			mostrarInfo(TextShader);
+			break;
+		case 7: // urano
+            pos_aux = posicaoPlanetas[6];
+            pos_aux.y = 40.0f;
+            camera.Position = pos_aux;
+
+            mostrarInfo(TextShader);
+			break;
+		case 8: // netuno
+            pos_aux = posicaoPlanetas[7];
+            pos_aux.y = 40.0f;
+            camera.Position = pos_aux;
+            mostrarInfo(TextShader);
+			
+        default:
+            if (planeta == 0) {
+                renderText(TextShader, "Sistema Solar ", 25.0f, SCR_HEIGHT - 30.0f, 0.50f, glm::vec3(0.145f, 0.705f, 0.745f));
+            }
+              
+            break;
+        }
+		
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
+    glDeleteVertexArrays(1, &VAO_t);
+    glDeleteBuffers(1, &VBO_t);
     glfwTerminate();
+	
     return 0;
 }
 
@@ -594,10 +760,81 @@ void processInput(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
     {
+		planeta = 0;
         camera.Position = glm::vec3(0.0f, 100.0f, -150.0f);
         camera.Yaw = 90.0f;
         camera.Pitch = -40.0f;
     }
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+	{
+		planeta = 1;
+        Info.Nome = "Mercurio";
+        Info.Velocidade = "47,87";
+        Info.Massa = "0.32868";
+        Info.Diametro = "4880";
+	}
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+    {
+        planeta = 2;
+        Info.Nome = "Venus";
+		Info.Velocidade = "35,02";
+        Info.Massa = "0.32868";
+        Info.Diametro = "12104";
+    }
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+    {
+        planeta = 3;
+        Info.Nome = "Terra";
+		Info.Velocidade = "29,78";
+        Info.Massa = "5.97600";
+        Info.Diametro = "12756";
+    }
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+    {
+        planeta = 4;
+        Info.Nome = "Marte";
+		Info.Velocidade = "24,13";
+        Info.Massa = "0.63345";
+        Info.Diametro = "6794";
+    }
+    if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+    {
+        planeta = 5;
+        Info.Nome = "Jupiter";
+		Info.Velocidade = "13,07";
+        Info.Massa = "1876.64328";
+        Info.Diametro = "142984";
+    }
+    if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+    {
+        planeta = 6;
+        Info.Nome = "Saturno";
+		Info.Velocidade = "9,69";
+        Info.Massa = "561.80376";
+        Info.Diametro = "120536";
+    }
+    if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS)
+    {
+        planeta = 7;
+        Info.Nome = "Urano";
+		Info.Velocidade = "6,81";
+        Info.Massa = "86.05440";
+        Info.Diametro = "51118";
+
+    }
+    if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS)
+    {
+        planeta = 8;
+        Info.Nome = "Neptuno";
+		Info.Velocidade = "5,43";
+        Info.Massa = "101.59200";
+        Info.Diametro = "49 532";
+
+    }
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+	{
+		planeta = 0;
+	}
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -793,5 +1030,57 @@ unsigned int loadCubemap(vector<string> faces)
 
     return textureID;
 }
+// função para renderizar texto
+void renderText(Shader &s, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+{
+    // Activate corresponding render state	
+	s.use();
+    glUniform3f(glGetUniformLocation(s.ID, "textColor"), color.x, color.y, color.z);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+	
 
+    // Iterate through all characters
+    std::string::const_iterator c;
+    for (c = text.begin(); c != text.end(); c++)
+    {
+        Character ch = Characters[*c];
+
+        GLfloat xpos = x + ch.Bearing.x * scale;
+        GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+        GLfloat w = ch.Size.x * scale;
+        GLfloat h = ch.Size.y * scale;
+        // Update VBO for each character
+        GLfloat vertices[6][4] = {
+            { xpos,     ypos + h,   0.0, 0.0 },
+            { xpos,     ypos,       0.0, 1.0 },
+            { xpos + w, ypos,       1.0, 1.0 },
+
+            { xpos,     ypos + h,   0.0, 0.0 },
+            { xpos + w, ypos,       1.0, 1.0 },
+            { xpos + w, ypos + h,   1.0, 0.0 }
+        };
+        // Render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        // Update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+// rendizar o texto de cada um dos planetas
+void mostrarInfo(Shader& s)
+{
+    renderText(s, "Planeta: " + Info.Nome, 25.0f, SCR_HEIGHT - 30.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
+    renderText(s, "Velocidade: " + Info.Velocidade, 25.0f, SCR_HEIGHT - 50.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
+    renderText(s, "Massa (kg * 10^24): " + Info.Massa, 25.0f, SCR_HEIGHT - 70.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
+    renderText(s, "Diametro (km): " + Info.Diametro, 25.0f, SCR_HEIGHT - 90.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
+}
 

@@ -44,5 +44,11 @@
     <None Include="shaders\skybox.glsl">
       <Filter>Arquivos de Origem</Filter>
     </None>
+    <None Include="shaders\textshader.fs">
+      <Filter>Arquivos de Origem</Filter>
+    </None>
+    <None Include="shaders\textshader.vs">
+      <Filter>Arquivos de Origem</Filter>
+    </None>
   </ItemGroup>
 </Project>

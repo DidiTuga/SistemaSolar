@@ -82,8 +82,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\diogo\OneDrive\Documentos\OpenGL\assimp;C:\Users\diogo\OneDrive\Documentos\OpenGL\glfw-3.3.8.bin.WIN32\lib-vc2022;C:\Users\diogo\OneDrive\Documentos\OpenGL\glew-2.1.0\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\diogo\OneDrive\Documentos\OpenGL\freetype;C:\Users\diogo\OneDrive\Documentos\OpenGL\assimp;C:\Users\diogo\OneDrive\Documentos\OpenGL\glfw-3.3.8.bin.WIN32\lib-vc2022;C:\Users\diogo\OneDrive\Documentos\OpenGL\glew-2.1.0\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype.lib;assimp-vc140-mt.lib;opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -101,8 +101,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\diogo\OneDrive\Documentos\OpenGL\assimp;C:\Users\diogo\OneDrive\Documentos\OpenGL\glfw-3.3.8.bin.WIN32\lib-vc2022;C:\Users\diogo\OneDrive\Documentos\OpenGL\glew-2.1.0\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>assimp-vc140-mt.lib;opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\diogo\OneDrive\Documentos\OpenGL\freetype;C:\Users\diogo\OneDrive\Documentos\OpenGL\assimp;C:\Users\diogo\OneDrive\Documentos\OpenGL\glfw-3.3.8.bin.WIN32\lib-vc2022;C:\Users\diogo\OneDrive\Documentos\OpenGL\glew-2.1.0\lib\Release\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype.lib;assimp-vc140-mt.lib;opengl32.lib;glew32s.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -148,6 +148,8 @@
     <None Include="shaders\light_cube.glsl" />
     <None Include="shaders\skybox.frag" />
     <None Include="shaders\skybox.glsl" />
+    <None Include="shaders\textshader.fs" />
+    <None Include="shaders\textshader.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

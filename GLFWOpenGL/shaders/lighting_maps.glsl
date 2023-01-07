@@ -12,19 +12,6 @@ uniform mat4 view;
 uniform mat4 projection;
 
 
-
-
-
-//vec2 to_sphere(vec2 P)
-//{
-//
-//    float theta = atan(P.y,(P.x));
-//    float phi= acos(P.z/r); // in [0,pi]
-//    return vec2(theta, phi);
-//}
-
-
-
 void main()
 {
     
