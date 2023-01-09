@@ -70,10 +70,10 @@ void renderText(Shader& shader, std::string text, float x, float y, float scale,
 void mostrarInfo(Shader& shader);
 
 struct Character {
-	GLuint TextureID;   // ID handle of the glyph texture
-	glm::ivec2 Size;    // Size of glyph
-	glm::ivec2 Bearing;  // Offset from baseline to left/top of glyph
-	GLuint Advance;    // Offset to advance to next glyph
+	GLuint TextureID;   // ID  texture
+	glm::ivec2 Size;    // Tamanho do glifo
+	glm::ivec2 Bearing;  // Deslocamento da linha de base para a esquerda/topo do glifo
+	GLuint Advance;    // Deslocamento para avançar para o próximo glifo
 };
 map<GLchar, Character> Characters;
 unsigned int VAO, VBO;
@@ -167,13 +167,13 @@ int main()
 
     for (unsigned char c = 0; c < 128; c++)
     {
-        // load character glyph 
+		// carregar o caracter para a face
         if (FT_Load_Char(face, c, FT_LOAD_RENDER))
         {
             std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
             continue;
         }
-        // generate texture
+        // gerar textura
         unsigned int texture;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -188,12 +188,12 @@ int main()
             GL_UNSIGNED_BYTE,
             face->glyph->bitmap.buffer
         );
-        // set texture options
+		// guardar as configurações da letra
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // now store character for later use
+        // qualquer o caracter para usar mais tarde
         Character character = {
             texture,
             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
@@ -203,7 +203,7 @@ int main()
         Characters.insert(std::pair<char, Character>(c, character));
     }
     glBindTexture(GL_TEXTURE_2D, 0);
-    // Destroy FreeType once we're finished
+	// Destroir FreeType quando terminar
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 
@@ -347,12 +347,12 @@ int main()
 	for (int i = 0; i < 8; i++) {
 		posicaoPlanetas[i] = posicao_centro;
 	}
-    // render loop
+    // loop
     // -----------
     while (!glfwWindowShouldClose(window))
     {
 
-        // per-frame time logic
+        // frame time logic
         // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -362,7 +362,7 @@ int main()
         // -----
         processInput(window);
 
-        // render
+        // renderizar
         // ------
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -370,11 +370,11 @@ int main()
 		// ativar o shader qe queremos usar
 		sphereShader.use();
 		
-		//material properties
+		//propriedades do material
 		sphereShader.setInt("material.diffuse", 0);
         sphereShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
         sphereShader.setFloat("material.shininess", 64.0f);
-		// light properties
+		// luz propriadades
         sphereShader.setVec3("light.ambient", acc1, acc1, acc1);
         sphereShader.setVec3("light.diffuse", acc2, acc2, acc2);
         sphereShader.setVec3("light.specular", acc3, acc3, acc3);
@@ -398,10 +398,8 @@ int main()
         //Shader ativado para o desenho da esfera
         sphereShader.use();
 
-        // view and projection transformations
 
 
-        // world transformation
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 moon;
         // posição da terra
@@ -425,7 +423,6 @@ int main()
 
         sphereShader.use();
 
-        // world transformation
         model = glm::mat4(1.0f);
 		xx = sin(glfwGetTime() * plan_velocidade * 10.5f) * planet_raio * 0.5f * 2.0f;
 		zz = cos(glfwGetTime() * plan_velocidade * 10.5f) * planet_raio * 0.5f * 2.0f;
@@ -466,7 +463,6 @@ int main()
         sphereShader.use();
 
 
-        // world transformation
         model = glm::mat4(1.0f);
 		xx = sin(glfwGetTime() * plan_velocidade) * planet_raio * 1.f * 2.f;
 		zz = cos(glfwGetTime() * plan_velocidade) * planet_raio * 1.f * 2.f;
@@ -488,7 +484,6 @@ int main()
 
         sphereShader.use();
 
-        // world transformation
         model = glm::mat4(1.0f);
 		xx = sin(glfwGetTime() * plan_velocidade * 0.8f) * planet_raio * 2.f * 2.f;
 		zz = cos(glfwGetTime() * plan_velocidade * 0.8f) * planet_raio * 2.f * 2.f;
@@ -509,7 +504,6 @@ int main()
 
         sphereShader.use();
 
-        // world transformation
         model = glm::mat4(1.0f);
 		xx = sin(glfwGetTime() * plan_velocidade * 0.6f) * planet_raio * 4.f * 2.f;
 		zz = cos(glfwGetTime() * plan_velocidade * 0.6f) * planet_raio * 4.f * 2.f;
@@ -531,7 +525,6 @@ int main()
 
         sphereShader.use();
 
-        // world transformation
         model = glm::mat4(1.0f);
 		xx = sin(glfwGetTime() * plan_velocidade * 0.5f) * planet_raio * 5.f * 2.5f;
 		zz = cos(glfwGetTime() * plan_velocidade * 0.5f) * planet_raio * 5.f * 2.5f;
@@ -551,7 +544,6 @@ int main()
 
         sphereShader.use();
 
-        // world transformation
         model = glm::mat4(1.0f);
 		xx = sin(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 6.f * 2.5f;
 		zz = cos(glfwGetTime() * plan_velocidade * 0.46f) * planet_raio * 6.f * 2.5f;
@@ -572,7 +564,7 @@ int main()
 
         sphereShader.use();
 
-        // world transformation
+        // transformação
         model = glm::mat4(1.0f);
 		// posição do planeta
 		xx = sin(glfwGetTime() * plan_velocidade * 0.42f) * planet_raio * 7.f * 2.5f;
@@ -595,7 +587,7 @@ int main()
         sphereShader.use();
 
 
-        // world transformation
+        // transformação 
         model = glm::mat4(1.0f);
 		// posição do planeta
 		xx = sin(glfwGetTime() * plan_velocidade * 0.38f) * planet_raio * 8.f * 2.5f;
@@ -645,7 +637,7 @@ int main()
         glBindVertexArray(skyboxVAO);
 
 
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+		glDepthFunc(GL_LEQUAL);  // mudar a profundidade para que o skybox seja desenhado atrás de tudo
 
         skyboxShader.use();
         view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // removemos a translacao da matriz view
@@ -656,7 +648,7 @@ int main()
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
-        glDepthFunc(GL_LESS); // set depth function back to default
+        glDepthFunc(GL_LESS); 
 		// ###################################### Info dos Planetas ######################################
         glm::vec3 pos_aux;
         switch (planeta)
@@ -753,7 +745,7 @@ int main()
         glfwPollEvents();
     }
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
+	// glfw: terminar e limpar
     // ------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO_t);
     glDeleteBuffers(1, &VBO_t);
@@ -762,7 +754,7 @@ int main()
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// processar todos os inputs do usuario
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window)
 {
@@ -879,7 +871,7 @@ void processInput(GLFWwindow* window)
 	}
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// glfw: quando a janela e alterada de tamanho (por exemplo, minimizada ou maximizada)
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -889,7 +881,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 }
 
 
-// glfw: whenever the mouse moves, this callback is called
+// glfw: quando o mouse se move
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
@@ -908,13 +900,13 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// glfw: quando o scroll do mouse e usado
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
 }
-// Load texture from file
+// carregar as texturas
 // ----------------------
 unsigned int loadTexture(char const* path)
 {
