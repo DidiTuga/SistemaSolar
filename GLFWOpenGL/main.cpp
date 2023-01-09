@@ -1,21 +1,15 @@
 ﻿#include <glad/glad.h>
-
 #include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <stdlib.h>
 #include <iostream> 
 #include <vector>
 #include <ft2build.h>
 #include FT_FREETYPE_H  
 using namespace std;
-
 #include <math.h>
 #define _USE_MATH_DEFINES
-
-// includes
 #include <stb_image.h>
 #include <shader_m.h>
 #include <camera.h>
@@ -26,8 +20,8 @@ using namespace std;
 #define MEMBER_OFFSET(s,m) ((char*)NULL + (offsetof(s,m)))
 
 // settings
-const unsigned int SCR_WIDTH = 1024;
-const unsigned int SCR_HEIGHT = 768;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
 // camera
 Camera camera(glm::vec3(0.0f, 60.0f, -110.0f));
@@ -386,6 +380,12 @@ int main()
         sphereShader.setVec3("light.specular", acc3, acc3, acc3);
         sphereShader.setVec3("light.position", glm::vec3(acc1, acc2, acc3));
         sphereShader.setVec3("viewPos", camera.Position);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+        sphereShader.setMat4("projection", projection);
+        glm::mat4 view = camera.GetViewMatrix();
+        sphereShader.setMat4("view", view);
+
+
 
         // ########################################## Terra #########################################
         //Aqui especificamos que VAO queremos que esteja ativo para o render do respetivo planeta
@@ -399,10 +399,7 @@ int main()
         sphereShader.use();
 
         // view and projection transformations
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-        glm::mat4 view = camera.GetViewMatrix();
-        sphereShader.setMat4("projection", projection);
-        sphereShader.setMat4("view", view);
+
 
         // world transformation
         glm::mat4 model = glm::mat4(1.0f);
@@ -671,6 +668,7 @@ int main()
             // camera olhar para baixo 
             camera.Pitch = -90.0f;
             camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
             mostrarInfo(TextShader);
 			break;
 		case 2: // Venus
@@ -680,6 +678,7 @@ int main()
             // camera olhar para baixo 
             camera.Pitch = -90.0f;
             camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
             mostrarInfo(TextShader);
 			
 			break;
@@ -690,6 +689,7 @@ int main()
             // camera olhar para baixo 
             camera.Pitch = -90.0f;
             camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
             mostrarInfo(TextShader);
 			break;
 		case 4: // marte
@@ -699,6 +699,7 @@ int main()
             // camera olhar para baixo 
             camera.Pitch = -90.0f;
             camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
             mostrarInfo(TextShader);
 			break;
 		case 5: // jupiter
@@ -708,6 +709,7 @@ int main()
             // camera olhar para baixo 
             camera.Pitch = -90.0f;
             camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
             mostrarInfo(TextShader);
 			break;
 		case 6: // saturno
@@ -717,6 +719,7 @@ int main()
             // camera olhar para baixo 
             camera.Pitch = -90.0f;
             camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
 			mostrarInfo(TextShader);
 			break;
 		case 7: // urano
@@ -726,6 +729,7 @@ int main()
 			// camera olhar para baixo 
 			camera.Pitch = -90.0f;
 			camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
             mostrarInfo(TextShader);
 			break;
 		case 8: // netuno
@@ -735,6 +739,7 @@ int main()
             // camera olhar para baixo 
             camera.Pitch = -90.0f;
             camera.Yaw = 0.0f;
+            camera.ProcessMouseMovement(0.0, 0.0);
             mostrarInfo(TextShader);
 			
         default:
@@ -772,13 +777,35 @@ void processInput(GLFWwindow* window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
-
+    // zoom in com o z e zoom out com o x
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+    {
+        float Zoom = camera.Zoom;
+		if (Zoom > 45.0f)
+			camera.Zoom = 45.0f;
+        else {
+			camera.Zoom += 0.2f;
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+		float Zoom = camera.Zoom;
+        if (Zoom < 1.0f)
+			camera.Zoom = 1.0f;
+		else {
+			camera.Zoom -= 0.2f;
+		}
+    }
+	
+	// ###################################### Info dos Planetas ######################################
     if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
     {
 		planeta = 0;
+
         camera.Position = glm::vec3(0.0f, 150.0f, -250.0f);
         camera.Yaw = 90.0f;
         camera.Pitch = -40.0f;
+        camera.ProcessMouseMovement(0.0, 0.0);
     }
 	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 	{
@@ -1094,7 +1121,7 @@ void renderText(Shader &s, std::string text, GLfloat x, GLfloat y, GLfloat scale
 void mostrarInfo(Shader& s)
 {
     renderText(s, "Planeta: " + Info.Nome, 25.0f, SCR_HEIGHT - 30.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
-    renderText(s, "Velocidade: " + Info.Velocidade, 25.0f, SCR_HEIGHT - 50.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
+    renderText(s, "Velocidade (km/s): " + Info.Velocidade, 25.0f, SCR_HEIGHT - 50.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
     renderText(s, "Massa (kg * 10^24): " + Info.Massa, 25.0f, SCR_HEIGHT - 70.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
     renderText(s, "Diametro (km): " + Info.Diametro, 25.0f, SCR_HEIGHT - 90.0f, 0.35f, glm::vec3(0.145f, 0.705f, 0.745f));
 }
