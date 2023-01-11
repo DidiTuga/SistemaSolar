@@ -37,7 +37,7 @@ float lastFrame = 0.0f;
 glm::vec3 posicao_centro = glm::vec3(0.0f, 0.0f, 0.0f);
 float plan_velocidade = 0.5f;
 float planet_raio = 10.0f;
-int planeta = 0;
+int planeta = 0; 
 
 // lighting
 glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
@@ -62,14 +62,16 @@ float acc3 = 1.0f;
 unsigned int loadTexture(const char* path);
 unsigned int loadCubemap(vector<string> faces);
 GLuint SolidSphere(float radius, int slices, int stacks);
+///
 void processInput(GLFWwindow* window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+/// 
 void renderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
 void mostrarInfo(Shader& shader);
 
-struct Character {
+struct Character { 
 	GLuint TextureID;   // ID  texture
 	glm::ivec2 Size;    // Tamanho do glifo
 	glm::ivec2 Bearing;  // Deslocamento da linha de base para a esquerda/topo do glifo
@@ -149,6 +151,7 @@ int main()
     // --------------- projeção das letras
     glm::mat4 text_projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
     TextShader.use();
+	// envia para o shaders
     glUniformMatrix4fv(glGetUniformLocation(TextShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(text_projection));
 
 
@@ -282,7 +285,7 @@ int main()
     GLuint vao = SolidSphere(planet_raio, 32, 32);
 
 
-    // Modelo de saturno
+    // Modelo de saturno (Assimp Model)
     Model ourModel("C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Saturno/teste.obj");
 
 	// guardar a posição dos planetas
@@ -310,9 +313,6 @@ int main()
 	};
 	
 	unsigned int cubemapTexture = loadCubemap(faces);
-    //ativamos aqui o shader que vamos utilizar
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
 	
 	// ############################### GERAR VETORES COM POSIÇÂO DE CADA ORBITA ###############################
     std::vector<float> orbVert;
@@ -580,7 +580,7 @@ int main()
 
 
         //###################################### NEPTUNO ######################################
-
+        glBindVertexArray(vao);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, neptuno_tex);
 
@@ -942,7 +942,7 @@ unsigned int loadTexture(char const* path)
     return textureID;
 }
 // Carregar os atributos necessarios para a criação de uma esfera
-// ------------
+// ------------ 
 GLuint SolidSphere(float radius, int slices, int stacks)
 {
     using namespace glm;
