@@ -46,16 +46,16 @@ float acc2 = 0.5f;
 float acc3 = 1.0f;
 
 // texturas
-#define sol_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_sun.jpg"
-#define mercurio_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_mercury.jpg"
-#define venus_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_venus_surface.jpg"
-#define terra_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_earth.jpg"
-#define lua_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_moon.jpg"
-#define marte_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_mars.jpg"
-#define jupiter_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_jupiter.jpg"
-#define saturno_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_saturn.jpg"
-#define urano_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_uranus.jpg"
-#define neptuno_path "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/2k_neptune.jpg"
+#define sol_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_sun.jpg"
+#define mercurio_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_mercury.jpg"
+#define venus_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_venus_surface.jpg"
+#define terra_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_earth.jpg"
+#define lua_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_moon.jpg"
+#define marte_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_mars.jpg"
+#define jupiter_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_jupiter.jpg"
+#define saturno_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_saturn.jpg"
+#define urano_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_uranus.jpg"
+#define neptuno_path "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/2k_neptune.jpg"
 
 
 // funções
@@ -286,7 +286,7 @@ int main()
 
 
     // Modelo de saturno (Assimp Model)
-    Model ourModel("C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Saturno/teste.obj");
+    Model ourModel("C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/Saturno/teste.obj");
 
 	// guardar a posição dos planetas
 	glm::vec3 posicaoPlanetas[8];
@@ -304,12 +304,12 @@ int main()
 	unsigned int neptuno_tex = loadTexture(neptuno_path);
 	
     vector <string> faces{
-        "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/right.jpg",
-        "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/left.jpg",
-        "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/top.jpg",
-        "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/bottom.jpg",
-        "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/front.jpg",
-        "C:/Users/diogo/OneDrive - Universidade da Beira Interior/3ª ano/1º Semestre/Computacao Grafica/Projeto/Ex1/GLFWOpenGL/Textures/Sky/back.jpg",
+        "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/Sky/right.jpg",
+        "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/Sky/left.jpg",
+        "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/Sky/top.jpg",
+        "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/Sky/bottom.jpg",
+        "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/Sky/front.jpg",
+        "C:/Users/tiago/OneDrive/Ambiente de Trabalho/UBI/ANO_3/1Semestre/CG/Projeto/SistemaSolar/GLFWOpenGL/Textures/Sky/back.jpg",
 	};
 	
 	unsigned int cubemapTexture = loadCubemap(faces);
